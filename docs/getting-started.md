@@ -13,24 +13,36 @@ You have 1,246 individual brain tissue images (tiles) that were extracted from a
 ## Before You Start
 
 ### Prerequisites
-- macOS or Linux computer
-- At least 4GB free RAM
+- macOS, Linux, or Windows computer
+- At least 4GB free RAM  
 - Python 3.9 or newer (most modern systems have this)
+- **uv package manager** - install from https://docs.astral.sh/uv/#installation
 
 ### One-Time Setup
 
-1. **Open Terminal**
-   - Press `Cmd + Space`, type "Terminal", press Enter
-   - You'll see a window with text and a blinking cursor
-
-2. **Navigate to Your Project**
-   ```bash
-   cd /Volumes/OWC__1M2_4TB/SBG_Baptiste_Morgane
-   ```
+1. **Open Terminal/Command Prompt**
+   - **Mac**: Press `Cmd + Space`, type "Terminal", press Enter
+   - **Windows**: Press `Win + R`, type "cmd", press Enter
+   - **Linux**: Press `Ctrl + Alt + T`
    
-3. **Activate the Environment**
+   You'll see a window with text and a blinking cursor.
+
+2. **Navigate to Your Project Directory**
    ```bash
+   cd path/to/your/project/directory
+   ```
+   Replace `path/to/your/project/directory` with wherever you placed the project files.
+   
+3. **Activate the Virtual Environment**
+   ```bash
+   # Mac/Linux:
    source .venv/bin/activate
+   
+   # Windows cmd:
+   .venv\Scripts\activate.bat
+   
+   # Windows PowerShell:
+   .venv\Scripts\Activate.ps1
    ```
    You should see `(.venv)` appear at the start of your command line.
 
@@ -171,7 +183,12 @@ Start small (2x2 or 3x3) for testing, then scale up.
 ### "Command not found: tile-stitcher"
 ```bash
 # Make sure you activated the environment
+# Mac/Linux:
 source .venv/bin/activate
+# Windows cmd:
+.venv\Scripts\activate.bat
+# Windows PowerShell:
+.venv\Scripts\Activate.ps1
 
 # Check if you see (.venv) at the start of your command line
 # If not, the environment isn't active
