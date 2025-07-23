@@ -2,6 +2,8 @@
 
 Stitch together brain tissue regions from our 1,246 individual microscopy tiles.
 
+*Built in collaboration for Morgane Marie and Baptiste Philippot.*
+
 ## What it does
 
 Takes specific regions from the cerebellum tile dataset and combines them into single images ready for analysis. Works with the 32×25 grid of tiles we extracted, handling both channels and all 19 z-slices.
