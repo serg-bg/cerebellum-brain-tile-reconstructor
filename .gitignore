@@ -1,6 +1,7 @@
 # Development and planning files
 docs/plan.md
 .claude
+CLAUDE.md
 
 # Python
 __pycache__/
