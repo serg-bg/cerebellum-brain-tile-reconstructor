@@ -1,0 +1,58 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "cerebellum-brain-tile-reconstructor"
+version = "1.0.0"
+description = "Reconstruct brain tissue regions from human cerebellum microscopy tiles"
+authors = [{ name = "Sergio Bernal-Garcia", email = "smb2318@columbia.edu" }]
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.9"
+
+dependencies = [
+    "napari>=0.4.19",
+    "pyside6>=6.4.0",
+    "ome-zarr>=0.8.0",
+    "zarr>=2.13.0,<3.0.0",
+    "numcodecs>=0.12.0,<0.13.0",
+    "dask[array]>=2023.1.0",
+    "magicgui>=0.7.0",
+    "xarray>=2023.1.0",
+    "tqdm>=4.64.0",
+    "numpy>=1.21.0",
+    "aicsimageio>=4.9.0",
+    "rich>=13.0.0",
+    "tifffile>=2023.1.0",
+]
+
+[project.optional-dependencies]
+gpu = [
+    "cupy>=12.0.0; platform_system == 'Linux'",
+    "cupy-cuda12x>=12.0.0; platform_system == 'Windows'",
+]
+dev = [
+    "pytest>=7.0.0",
+    "black>=23.0.0",
+    "ruff>=0.1.0",
+]
+
+[project.urls]
+Repository = "https://github.com/serg-bg/cerebellum-brain-tile-reconstructor"
+
+[project.scripts]
+zarr-roi-extractor = "scripts.napari_roi_extractor:main"
+tile-stitcher = "scripts.tile_stitcher:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["scripts"]
+
+[tool.black]
+line-length = 88
+
+[tool.ruff]
+line-length = 88
+target-version = "py39"
+select = ["E", "W", "F", "I"]
+ignore = ["E501"]
