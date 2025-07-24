@@ -2,10 +2,19 @@
 
 import json
 import sys
-import termios
-import tty
 from pathlib import Path
 from typing import Dict, Optional, Set, Tuple
+
+# Cross-platform terminal handling
+try:
+    # Unix/Linux/macOS
+    import termios
+    import tty
+    HAS_TERMIOS = True
+except ImportError:
+    # Windows
+    import msvcrt
+    HAS_TERMIOS = False
 
 from rich.console import Console
 from rich.live import Live
@@ -253,15 +262,26 @@ class InteractiveSelector:
             return ''
     
     def _get_key_raw(self) -> str:
-        """Get raw key input (Unix/macOS)."""
-        fd = sys.stdin.fileno()
-        old_settings = termios.tcgetattr(fd)
-        try:
-            tty.cbreak(fd)
-            key = sys.stdin.read(1)
+        """Get raw key input (cross-platform)."""
+        if HAS_TERMIOS:
+            # Unix/Linux/macOS
+            fd = sys.stdin.fileno()
+            old_settings = termios.tcgetattr(fd)
+            try:
+                tty.cbreak(fd)
+                key = sys.stdin.read(1)
+                return key
+            finally:
+                termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+        else:
+            # Windows
+            key = msvcrt.getch()
+            if isinstance(key, bytes):
+                try:
+                    return key.decode('utf-8')
+                except UnicodeDecodeError:
+                    return ''
             return key
-        finally:
-            termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
     
     def _wait_for_key(self):
         """Wait for any key press."""
