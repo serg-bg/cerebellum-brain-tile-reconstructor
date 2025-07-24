@@ -1,110 +1,143 @@
-# Brain Tile Reconstructor
+# Brain Tissue Analysis Pipeline
 
-Stitch together brain tissue regions from our 1,246 individual microscopy tiles.
+Complete workflow to process large cerebellum microscopy data: from original scan → individual tiles → reconstructed regions for analysis.
 
 *Built in collaboration for Morgane Marie and Baptiste Philippot.*
 
-## What it does
+## What this pipeline does
 
-Takes specific regions from the cerebellum tile dataset and combines them into single images ready for analysis. Works with the 32×25 grid of tiles we extracted, handling both channels and all 19 z-slices.
+Converts your large brain microscopy file (`.czi` format) into manageable pieces, then lets you reconstruct specific regions for analysis:
 
-## For Collaborators - Getting Started
+1. **Convert** large CZI microscopy file → accessible OME-Zarr format 
+2. **Extract** 1,246 individual brain tissue tiles (1024×1024 pixels each)
+3. **Reconstruct** any region you choose → single image file ready for ImageJ/napari
 
-### Step 1: Clone the Repository
+**Perfect for researchers who need specific brain regions without loading 126GB+ files.**
+
+## Complete Workflow Overview
+
+**You'll need**: Your original `Morgane_BP_Cerebellum_Stitch.czi` microscopy file (~126GB) and a computer with 8GB+ RAM.
+
+**The process**: 3 main steps that you run once, then reconstruct regions as needed.
+
+| Step | What it does | Time | Output |
+|------|-------------|------|---------|
+| 1. **Convert** | CZI → OME-Zarr format | ~2 hours | `.ome.zarr` file |
+| 2. **Extract** | OME-Zarr → 1,246 tiles | ~30 min | `tiles/` folder |
+| 3. **Reconstruct** | Select tiles → analysis image | ~1 min | `.tif` file |
+
+*Steps 1-2 are one-time setup. Step 3 you'll use repeatedly for different brain regions.*
+
+## Setup (First Time Only)
+
+### Get the Code
 ```bash
-# Clone to your local machine
-git clone https://github.com/[your-username]/cerebellum-brain-tile-reconstructor.git
+# Clone to your local machine  
+git clone https://github.com/serg-bg/cerebellum-brain-tile-reconstructor.git
 cd cerebellum-brain-tile-reconstructor
 ```
 
-### Step 2: Install Prerequisites
-- **Install uv package manager**: https://docs.astral.sh/uv/#installation
-- **Python 3.9+** (usually already installed)
+### Install Requirements
+1. **Install uv package manager**: https://docs.astral.sh/uv/#installation  
+2. **Python 3.9+** (usually already installed)
 
-### Step 3: Set Up Environment
+### Setup Environment
 ```bash
-# Create and activate virtual environment
+# Create virtual environment and install everything
 uv venv
 source .venv/bin/activate  # Mac/Linux
-# OR
-.venv\Scripts\activate.bat  # Windows cmd
-# OR  
-.venv\Scripts\Activate.ps1  # Windows PowerShell
+.venv\Scripts\activate.bat  # Windows
 
-# Install dependencies and the tool
 uv sync
 uv pip install -e .
 ```
 
-### Step 4: Test Installation
+### Test It Works
 ```bash
 tile-stitcher --help
 ```
-You should see help text. If you get errors, check the [troubleshooting guide](docs/getting-started.md#troubleshooting).
+✅ You should see help text. If errors, see [troubleshooting](#common-issues).
 
-## Basic usage
+## The 3-Step Process
 
+### Step 1: Convert CZI → OME-Zarr (~2 hours)
 ```bash
-# See what's available
+# Put your CZI file in the project folder, then:
+python convert_czi_to_ome_zarr_optimized.py
+```
+**What this does**: Converts your large CZI microscopy file to OME-Zarr format that Python can work with efficiently.  
+**Output**: `Morgane_BP_Cerebellum_Stitch.ome.zarr/` folder  
+**Progress**: You'll see CPU usage, memory stats, and processing updates.
+
+### Step 2: Extract Individual Tiles (~30 minutes)  
+```bash
+# Extract 1,246 brain tissue tiles from the converted file
+python scripts/napari_roi_extractor.py Morgane_BP_Cerebellum_Stitch.ome.zarr --tiles --output tiles/
+```
+**What this does**: Scans the brain image and saves only regions with actual tissue as individual 1024×1024 tiles.  
+**Output**: `tiles/` folder with 1,246 tile folders  
+**Progress**: Shows tile extraction progress and skips empty regions.
+
+### Step 3: Reconstruct Brain Regions (~ 1 minute each)
+```bash
+# See what regions are available
 tile-stitcher explore --grid
 
-# Make a small test region (3x3 tiles)
-tile-stitcher stitch --region y005:008,x008:011 --output test_region.tif --force
+# Create your first brain reconstruction (3x3 tiles)
+tile-stitcher stitch --region y015:018,x010:013 --output my_brain_region.tif --force
 ```
+**What this does**: Combines specific tiles back into a single image file ready for analysis.  
+**Output**: TIFF file compatible with ImageJ, Fiji, napari, etc.  
+**Result**: ~200MB file with 19 depth layers of brain tissue.
 
-That creates a ~200MB TIFF file ready for ImageJ or napari.
-
-## Documentation
-
-Everything else is in [`docs/getting-started.md`](docs/getting-started.md):
-- Step-by-step installation help
-- Detailed examples with working coordinates  
-- Troubleshooting common issues
-- Memory management tips
-- Sharing regions between collaborators
-
-## Dataset structure
-
-- **1,246 tiles** in 32×25 grid (y:0-31, x:0-24)
-- **2 channels** per location with different imaging conditions
-- **19 z-slices** per tile, 1024×1024 pixels each
-- **~45MB per tile**, both TIFF and OME-Zarr formats available
-
-## Quick examples
+## Quick Examples After Setup
 
 ```bash
-# Medium region for analysis (5x5 tiles, ~400MB)
-tile-stitcher stitch --region y010:015,x008:013 --output analysis.tif --force
+# Small test region (good for first try)
+tile-stitcher stitch --region y005:008,x008:011 --output test_region.tif --force
 
-# Compare channels from same region
+# Medium analysis region  
+tile-stitcher stitch --region y010:015,x008:013 --output analysis_region.tif --force
+
+# Compare different channels from same region
 tile-stitcher stitch --region y012:017,x010:015 --channel 0 --output region_c0.tif --force
 tile-stitcher stitch --region y012:017,x010:015 --channel 1 --output region_c1.tif --force
 ```
 
-For anything beyond basic usage, see the [complete guide](docs/getting-started.md).
+## What You Get
 
-## Common Issues
+**Final result**: Individual TIFF files with your chosen brain regions, ready for:
+- **ImageJ/Fiji**: Double-click to open, all 19 z-slices included
+- **napari**: `napari my_brain_region.tif` for 3D visualization  
+- **Analysis software**: Standard TIFF format works everywhere
 
-### "ModuleNotFoundError: No module named 'distributed'"
-If you get this error when running conversion scripts:
-```bash
-# Fix with:
-uv pip install "dask[distributed]" --upgrade
-# or
-pip install "dask[distributed]" --upgrade
-```
-
-### "ModuleNotFoundError: No module named 'termios'" (Windows)
-This is now fixed in the latest version. Update with:
-```bash
-git pull origin main
-uv pip install -e . --force-reinstall
-```
-
-### Need Help?
-- Check the [detailed troubleshooting guide](docs/getting-started.md#troubleshooting)
-- Contact: Sergio Bernal-Garcia <smb2318@columbia.edu>
+**Data specs**: 32×25 tile grid, 2 channels, 19 z-slices per tile, 1024×1024 pixels each.
 
 ---
 
-Sergio Bernal-Garcia <smb2318@columbia.edu>
+## Common Issues
+
+### "No such file: Morgane_BP_Cerebellum_Stitch.czi"
+```bash
+# Make sure your CZI file is in the project folder with exact name:
+ls -la Morgane_BP_Cerebellum_Stitch.czi
+```
+
+### "ModuleNotFoundError: No module named 'distributed'"  
+```bash
+# Fix missing dependency:
+uv pip install "dask[distributed]" --upgrade
+```
+
+### "Out of memory" during conversion
+```bash  
+# Close other programs and try again, or contact Sergio for tips
+```
+
+### Need Help?
+- **Complete guide**: [`docs/getting-started.md`](docs/getting-started.md)
+- **Contact**: Sergio Bernal-Garcia <smb2318@columbia.edu>
+
+---
+
+*Built for Morgane Marie and Baptiste Philippot - Sergio Bernal-Garcia <smb2318@columbia.edu>*
